@@ -3,9 +3,7 @@ const cheerio = require("cheerio");
 const fs = require('fs');
 const path = require('path');
 
-const json = {
-  categories: {},
-};
+let json = {};
 let scrapedPhrases = 0;
 let downloadedFiles = 0;
 
@@ -53,10 +51,8 @@ function scrapingPage(category) {
     .then(({ data }) => {
       const $ = cheerio.load(data);
 
-      const categoryName = $(`.panel-body ol li:nth-of-type(${category}) a`).text();
+      // const categoryName = $(`.panel-body ol li:nth-of-type(${category}) a`).text();
       const numOfPhrases = $('table tbody tr').length;
-
-      const categoryData = [];
 
       for(let i = 1; i <= numOfPhrases; i++) {
         if ($(`table tbody tr:nth-of-type(${i}) td`).length < 3) {
@@ -74,21 +70,19 @@ function scrapingPage(category) {
         const audioUrl = $(`table tbody tr:nth-of-type(${i}) td:nth-of-type(3) img`).attr('onclick').replace(/(.+\(')(.+)('\))$/, '$2');
         const audio = audioUrl.replace(/(.+\/)((?=\w+\.\w{3,4}$).+)/, '$2');
 
-        download(audioUrl, audio)
+        /*download(audioUrl, `${scrapedPhrases}-${audio}`)
           .then(() => {
             downloadedFiles += 1;
-          });
+          });*/
 
-        categoryData.push({
-          english,
-          portugues,
-          audio,
-        });
-      }
-
-      json.categories = {
-        ...json.categories,
-        [categoryName]: categoryData,
+        json = {
+          ...json,
+          [scrapedPhrases]: {
+            english,
+            portugues,
+            audio,
+          },
+        };
       }
     });
 }
